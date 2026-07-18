@@ -1,0 +1,90 @@
+<svg width="900" height="220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tech-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1628"/>
+      <stop offset="50%" style="stop-color:#0d2137"/>
+      <stop offset="100%" style="stop-color:#0a1929"/>
+    </linearGradient>
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#0099cc"/>
+    </linearGradient>
+    <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b35"/>
+      <stop offset="100%" style="stop-color:#f39c12"/>
+    </linearGradient>
+    <filter id="glow-cyan">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="900" height="220" fill="url(#tech-bg)"/>
+
+  <!-- Декоративная сетка -->
+  <line x1="0" y1="40" x2="900" y2="40" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="80" x2="900" y2="80" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="120" x2="900" y2="120" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="160" x2="900" y2="160" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="0" y1="200" x2="900" y2="200" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="150" y1="0" x2="150" y2="220" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="300" y1="0" x2="300" y2="220" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="450" y1="0" x2="450" y2="220" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="600" y1="0" x2="600" y2="220" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+  <line x1="750" y1="0" x2="750" y2="220" stroke="#00d4ff" opacity="0.03" stroke-width="1"/>
+
+  <!-- Большой шестигранник фон -->
+  <polygon points="60,40 120,70 120,130 60,160 0,130 0,70" fill="none" stroke="#00d4ff" opacity="0.08" stroke-width="1.5"/>
+  <polygon points="60,55 105,78 105,122 60,145 15,122 15,78" fill="#00d4ff" opacity="0.05"/>
+
+  <!-- Маленький шестигранник -->
+  <polygon points="60,70 90,85 90,110 60,125 30,110 30,85" fill="none" stroke="#00d4ff" opacity="0.15" stroke-width="1"/>
+  <text x="60" y="103" font-size="14" fill="#00d4ff" text-anchor="middle" font-family="monospace" font-weight="bold" opacity="0.7">IaC</text>
+
+  <!-- Вертикальный разделитель -->
+  <line x1="140" y1="40" x2="140" y2="180" stroke="#00d4ff" opacity="0.1" stroke-width="1"/>
+
+  <!-- Основной заголовок -->
+  <text x="170" y="75" font-size="40" font-weight="900" font-family="Arial, sans-serif" letter-spacing="2">
+    <tspan fill="url(#orange-grad)" filter="url(#glow-cyan)">ANSIBLE</tspan>
+  </text>
+
+  <text x="170" y="120" font-size="40" font-weight="900" font-family="Arial, sans-serif" letter-spacing="2">
+    <tspan fill="url(#cyan-grad)" filter="url(#glow-cyan)">TERRAFORM</tspan>
+  </text>
+
+  <!-- Правый блок с информацией -->
+  <rect x="500" y="40" width="360" height="140" rx="8" fill="#00d4ff" opacity="0.03" stroke="#00d4ff" stroke-width="1" opacity="0.1"/>
+
+  <!-- Кружки статуса -->
+  <circle cx="520" cy="55" r="5" fill="#2ecc71"/>
+  <circle cx="520" cy="75" r="5" fill="#2ecc71"/>
+  <circle cx="520" cy="95" r="5" fill="#f39c12"/>
+  <circle cx="520" cy="115" r="5" fill="#f39c12"/>
+
+  <!-- Статусы -->
+  <text x="540" y="60" font-size="13" fill="#aaa" font-family="monospace">Yandex Cloud</text>
+  <text x="540" y="80" font-size="13" fill="#aaa" font-family="monospace">Ubuntu 22.04 LTS</text>
+  <text x="540" y="100" font-size="13" fill="#aaa" font-family="monospace">PostgreSQL 15</text>
+  <text x="540" y="120" font-size="13" fill="#aaa" font-family="monospace">Nginx · PHP 8.1</text>
+
+  <!-- Теги снизу -->
+  <rect x="520" y="140" width="80" height="22" rx="11" fill="#00d4ff" opacity="0.08" stroke="#00d4ff" stroke-width="1" opacity="0.2"/>
+  <text x="560" y="155" font-size="9" fill="#00d4ff" text-anchor="middle" font-family="monospace">DEVOPS</text>
+
+  <rect x="610" y="140" width="80" height="22" rx="11" fill="#00d4ff" opacity="0.08" stroke="#00d4ff" stroke-width="1" opacity="0.2"/>
+  <text x="650" y="155" font-size="9" fill="#00d4ff" text-anchor="middle" font-family="monospace">AUTOMATION</text>
+
+  <rect x="700" y="140" width="80" height="22" rx="11" fill="#f39c12" opacity="0.08" stroke="#f39c12" stroke-width="1" opacity="0.2"/>
+  <text x="740" y="155" font-size="9" fill="#f39c12" text-anchor="middle" font-family="monospace">OPEN SOURCE</text>
+
+  <!-- Подзаголовок снизу -->
+  <text x="170" y="165" font-size="14" fill="#5a8a9a" font-family="monospace" letter-spacing="4">▸ INFRASTRUCTURE AS CODE ◂</text>
+
+  <!-- Нижняя полоса -->
+  <rect x="0" y="200" width="900" height="2" fill="url(#cyan-grad)" opacity="0.3"/>
+  <rect x="0" y="218" width="900" height="2" fill="url(#orange-grad)" opacity="0.15"/>
+</svg>
