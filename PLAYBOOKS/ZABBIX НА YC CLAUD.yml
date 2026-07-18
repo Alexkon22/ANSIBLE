@@ -1,0 +1,178 @@
+
+---
+- name: Install Zabbix 7.0 LTS on Ubuntu 22.04
+  hosts: zabbix
+  become: true
+  vars:
+    zabbix_db_name: zabbix
+    zabbix_db_user: zabbix
+    zabbix_db_password: "zabbix_pass_123"
+
+  tasks:
+    # ===== 1. УСТАНОВКА РЕПОЗИТОРИЯ ZABBIX =====
+    - name: Download Zabbix 7.0 repo
+      get_url:
+        url: "https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_7.0-1+ubuntu22.04_all.deb"
+        dest: /tmp/zabbix-release.deb
+
+    - name: Install Zabbix repo
+      apt:
+        deb: /tmp/zabbix-release.deb
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    # ===== 2. УСТАНОВКА POSTGRESQL 15 =====
+    - name: Install prerequisites
+      apt:
+        name:
+          - gnupg2
+          - wget
+        state: present
+
+    - name: Add PostgreSQL GPG key
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Add PostgreSQL 15 repository
+      apt_repository:
+        repo: "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main"
+        state: present
+        update_cache: yes
+
+    - name: Install PostgreSQL 15
+      apt:
+        name:
+          - postgresql-15
+          - postgresql-contrib-15
+        state: present
+
+    - name: Ensure PostgreSQL is running
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    # ===== 3. СОЗДАНИЕ БАЗЫ ДАННЫХ =====
+    - name: Create Zabbix DB user
+      shell: |
+        sudo -u postgres psql -c "CREATE USER {{ zabbix_db_user }} WITH PASSWORD '{{ zabbix_db_password }}';" 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Create Zabbix database
+      shell: |
+        sudo -u postgres psql -c "CREATE DATABASE {{ zabbix_db_name }} OWNER {{ zabbix_db_user }} ENCODING 'UTF8';" 2>/dev/null || true
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Grant privileges on database
+      shell: |
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ zabbix_db_name }} TO {{ zabbix_db_user }};"
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    # ===== 4. УСТАНОВКА ZABBIX =====
+    - name: Install Zabbix packages
+      apt:
+        name:
+          - zabbix-server-pgsql
+          - zabbix-frontend-php
+          - zabbix-nginx-conf
+          - zabbix-sql-scripts
+          - zabbix-agent
+          - nginx
+          - php8.1-fpm
+          - php8.1-pgsql
+        state: present
+
+    # ===== 5. ИМПОРТ СХЕМЫ =====
+    - name: Import Zabbix schema
+      shell: |
+        zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u postgres psql -d {{ zabbix_db_name }}
+      args:
+        executable: /bin/bash
+      register: schema_import
+      changed_when: false
+
+    # ===== 6. ПРАВА НА ТАБЛИЦЫ =====
+    - name: Grant permissions on all tables to Zabbix user
+      shell: |
+        sudo -u postgres psql -d {{ zabbix_db_name }} -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO {{ zabbix_db_user }};"
+        sudo -u postgres psql -d {{ zabbix_db_name }} -c "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO {{ zabbix_db_user }};"
+        sudo -u postgres psql -d {{ zabbix_db_name }} -c "GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO {{ zabbix_db_user }};"
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    # ===== 7. НАСТРОЙКА ZABBIX =====
+    - name: Set DBPassword in zabbix_server.conf
+      lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '^#?DBPassword='
+        line: "DBPassword={{ zabbix_db_password }}"
+
+    - name: Set DBName in zabbix_server.conf
+      lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '^#?DBName='
+        line: "DBName={{ zabbix_db_name }}"
+
+    - name: Set DBUser in zabbix_server.conf
+      lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '^#?DBUser='
+        line: "DBUser={{ zabbix_db_user }}"
+
+    - name: Configure nginx listen port
+      lineinfile:
+        path: /etc/zabbix/nginx.conf
+        regexp: '^\s*#?\s*listen'
+        line: "        listen 80;"
+
+    - name: Configure nginx server_name
+      lineinfile:
+        path: /etc/zabbix/nginx.conf
+        regexp: '^\s*#?\s*server_name'
+        line: "        server_name _;"
+
+    - name: Remove default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Link Zabbix nginx config
+      file:
+        src: /etc/zabbix/nginx.conf
+        dest: /etc/nginx/sites-enabled/zabbix.conf
+        state: link
+
+    # ===== 8. ЗАПУСК СЕРВИСОВ =====
+    - name: Start and enable all services
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      loop:
+        - zabbix-server
+        - zabbix-agent
+        - nginx
+        - php8.1-fpm
+
+    - name: Wait for services
+      pause:
+        seconds: 5
+
+    - name: Check Zabbix server status
+      command: systemctl status zabbix-server --no-pager
+      register: status_output
+      changed_when: false
+
+    - name: Show status
+      debug:
+        msg: "{{ status_output.stdout_lines }}"
